@@ -50,13 +50,18 @@ export class OceanAPI {
   }
 
   private parseHashRateCSV(csvText: string): HashRateData[] {
-    const lines = csvText.trim().split('\\n');
+    const lines = csvText.trim().split('\n');
     return lines.map(line => {
-      const [timestamp, worker, hashRate] = line.split(',');
+      const parts = line.split(',');
+      // Format appears to be: timestamp, hashrate_in_TH/s, (empty)
+      const timestamp = parts[0];
+      const hashRateStr = parts[1];
+      const hashRate = parseFloat(hashRateStr) || 0;
+
       return {
         timestamp: timestamp || new Date().toISOString(),
-        worker: worker || '',
-        hashRate: parseFloat(hashRate) || 0
+        worker: '', // Worker info not available in this CSV
+        hashRate: hashRate // This is already in TH/s from Ocean API
       };
     }).filter(item => item.hashRate > 0);
   }

@@ -41,18 +41,24 @@ export const AddressStatsDisplay = ({ address, onStatsUpdate }: AddressStatsProp
   const formatHashRate = (hashRate: number): string => {
     if (hashRate === 0) return '0 H/s';
 
-    if (hashRate >= 1e18) {
-      return `${(hashRate / 1e18).toFixed(2)} EH/s`;
-    } else if (hashRate >= 1e15) {
-      return `${(hashRate / 1e15).toFixed(2)} PH/s`;
-    } else if (hashRate >= 1e12) {
-      return `${(hashRate / 1e12).toFixed(2)} TH/s`;
-    } else if (hashRate >= 1e9) {
-      return `${(hashRate / 1e9).toFixed(2)} GH/s`;
-    } else if (hashRate >= 1e6) {
-      return `${(hashRate / 1e6).toFixed(2)} MH/s`;
+    // Ocean API returns values in TH/s, convert to H/s for proper formatting
+    const hashRateInTHs = hashRate;
+    const actualHashRate = hashRateInTHs * 1e12; // Convert TH/s to H/s
+
+    if (actualHashRate >= 1e18) {
+      return `${(actualHashRate / 1e18).toFixed(1)} EH/s`;
+    } else if (actualHashRate >= 1e15) {
+      return `${(actualHashRate / 1e15).toFixed(1)} PH/s`;
+    } else if (actualHashRate >= 1e12) {
+      return `${(actualHashRate / 1e12).toFixed(1)} TH/s`;
+    } else if (actualHashRate >= 1e9) {
+      return `${(actualHashRate / 1e9).toFixed(1)} GH/s`;
+    } else if (actualHashRate >= 1e6) {
+      return `${(actualHashRate / 1e6).toFixed(1)} MH/s`;
+    } else if (actualHashRate >= 1e3) {
+      return `${(actualHashRate / 1e3).toFixed(1)} KH/s`;
     } else {
-      return `${hashRate.toFixed(2)} H/s`;
+      return `${actualHashRate.toFixed(1)} H/s`;
     }
   };
 

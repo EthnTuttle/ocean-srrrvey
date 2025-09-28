@@ -40,9 +40,13 @@ const Index = () => {
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputAddress.trim() && inputAddress !== currentAddress) {
-      setCurrentAddress(inputAddress.trim());
-      startSurvey(inputAddress.trim());
+    console.log('Form submitted:', { inputAddress, currentAddress });
+
+    if (inputAddress.trim()) {
+      const trimmedAddress = inputAddress.trim();
+      console.log('Starting survey for:', trimmedAddress);
+      setCurrentAddress(trimmedAddress);
+      startSurvey(trimmedAddress);
     }
   };
 
@@ -88,6 +92,9 @@ const Index = () => {
       // Clean up interval after 50 seconds (before page reload)
       setTimeout(() => clearInterval(updateInterval), 50000);
 
+      // Set isActive to false after initial survey is complete
+      setIsActive(false);
+
     } catch (error) {
       console.error('Error starting survey:', error);
       setIsActive(false);
@@ -127,10 +134,10 @@ const Index = () => {
               />
               <button
                 type="submit"
-                disabled={!inputAddress.trim() || inputAddress === currentAddress}
+                disabled={!inputAddress.trim() || isActive}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
               >
-                Monitor
+                {isActive ? 'Monitoring...' : 'Monitor'}
               </button>
             </div>
           </form>
