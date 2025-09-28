@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ocean-style wave background with pirate colors -->
+  <defs>
+    <radialGradient id="oceanGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#16213e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f1419;stop-opacity:1" />
+    </radialGradient>
+
+    <!-- Skull gradient -->
+    <linearGradient id="skullGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Wave pattern -->
+    <pattern id="waves" x="0" y="0" width="40" height="20" patternUnits="userSpaceOnUse">
+      <path d="M0,10 Q10,0 20,10 Q30,20 40,10" stroke="#0891b2" stroke-width="2" fill="none" opacity="0.3"/>
+    </pattern>
+  </defs>
+
+  <!-- Background circle with wave pattern -->
+  <circle cx="100" cy="100" r="95" fill="url(#oceanGradient)" stroke="#0891b2" stroke-width="2"/>
+  <circle cx="100" cy="100" r="90" fill="url(#waves)" opacity="0.4"/>
+
+  <!-- Ocean waves at bottom -->
+  <path d="M20,150 Q40,140 60,150 Q80,160 100,150 Q120,140 140,150 Q160,160 180,150 L180,180 L20,180 Z" fill="#0891b2" opacity="0.6"/>
+  <path d="M20,160 Q40,150 60,160 Q80,170 100,160 Q120,150 140,160 Q160,170 180,160 L180,180 L20,180 Z" fill="#0369a1" opacity="0.8"/>
+
+  <!-- Pirate skull (main element) -->
+  <ellipse cx="100" cy="85" rx="28" ry="32" fill="url(#skullGradient)" stroke="#6b7280" stroke-width="1"/>
+
+  <!-- Eye sockets -->
+  <ellipse cx="90" cy="78" rx="6" ry="8" fill="#1f2937"/>
+  <ellipse cx="110" cy="78" rx="6" ry="8" fill="#1f2937"/>
+
+  <!-- Eye patch on left eye -->
+  <ellipse cx="90" cy="78" rx="9" ry="10" fill="#000000"/>
+  <path d="M80,70 Q85,65 95,70" stroke="#4b5563" stroke-width="2" fill="none"/>
+  <path d="M80,86 Q85,91 95,86" stroke="#4b5563" stroke-width="2" fill="none"/>
+
+  <!-- Glowing eye (right socket) -->
+  <circle cx="110" cy="78" r="3" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="110" cy="78" r="1.5" fill="#f59e0b"/>
+
+  <!-- Nose cavity -->
+  <path d="M100,85 L95,95 L100,98 L105,95 Z" fill="#374151"/>
+
+  <!-- Mouth/teeth -->
+  <rect x="92" y="100" width="3" height="8" fill="#f8f9fa" rx="1"/>
+  <rect x="97" y="102" width="3" height="6" fill="#f8f9fa" rx="1"/>
+  <rect x="102" y="100" width="3" height="8" fill="#f8f9fa" rx="1"/>
+  <rect x="107" y="102" width="3" height="6" fill="#f8f9fa" rx="1"/>
+
+  <!-- Crossbones behind skull -->
+  <g transform="translate(100,85) rotate(45)">
+    <rect x="-25" y="-2" width="50" height="4" fill="#e5e7eb" rx="2"/>
+    <circle cx="-25" cy="0" r="5" fill="#e5e7eb"/>
+    <circle cx="25" cy="0" r="5" fill="#e5e7eb"/>
+    <circle cx="-25" cy="0" r="3" fill="#d1d5db"/>
+    <circle cx="25" cy="0" r="3" fill="#d1d5db"/>
+  </g>
+
+  <g transform="translate(100,85) rotate(-45)">
+    <rect x="-25" y="-2" width="50" height="4" fill="#e5e7eb" rx="2"/>
+    <circle cx="-25" cy="0" r="5" fill="#e5e7eb"/>
+    <circle cx="25" cy="0" r="5" fill="#e5e7eb"/>
+    <circle cx="-25" cy="0" r="3" fill="#d1d5db"/>
+    <circle cx="25" cy="0" r="3" fill="#d1d5db"/>
+  </g>
+
+  <!-- Pirate bandana/hat -->
+  <path d="M72,60 Q100,45 128,60 Q125,70 100,65 Q75,70 72,60 Z" fill="#dc2626"/>
+  <path d="M72,60 Q100,50 128,60 L125,65 Q100,60 75,65 Z" fill="#b91c1c"/>
+
+  <!-- Bandana tie -->
+  <circle cx="130" cy="62" r="4" fill="#dc2626"/>
+  <path d="M134,62 L145,58 L142,68 Z" fill="#b91c1c"/>
+
+  <!-- Ocean "O" integrated into design -->
+  <circle cx="100" cy="140" r="20" fill="none" stroke="#0891b2" stroke-width="4" opacity="0.8"/>
+  <circle cx="100" cy="140" r="12" fill="none" stroke="#0369a1" stroke-width="3" opacity="0.6"/>
+
+  <!-- Pirate flag elements -->
+  <rect x="15" y="30" width="25" height="15" fill="#000000" rx="2"/>
+  <g transform="translate(27.5,37.5)">
+    <!-- Mini skull and crossbones on flag -->
+    <circle cx="0" cy="-2" r="4" fill="#ffffff"/>
+    <circle cx="-2" cy="-3" r="1" fill="#000000"/>
+    <circle cx="2" cy="-3" r="1" fill="#000000"/>
+    <path d="M-1,0 L0,2 L1,0" fill="#000000"/>
+    <line x1="-5" y1="0" x2="5" y2="0" stroke="#ffffff" stroke-width="1"/>
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#ffffff" stroke-width="1"/>
+  </g>
+
+  <!-- Flag pole -->
+  <line x1="40" y1="30" x2="40" y2="50" stroke="#8b5cf6" stroke-width="2"/>
+
+  <!-- Text around the circle -->
+  <path id="circleText" d="M 100,100 m -85,0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" fill="none" stroke="none"/>
+  <text font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#0891b2">
+    <textPath href="#circleText" startOffset="25%">
+      ⚡ PIRATING THE OCEAN ⚡
+    </textPath>
+  </text>
+</svg>
