@@ -4,8 +4,8 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vitest/config";
 
 // https://vitejs.dev/config/
-export default defineConfig(() => ({
-  base: '/ocean-srrrvey/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/ocean-srrrvey/' : '/',
   server: {
     host: "::",
     port: 8080,

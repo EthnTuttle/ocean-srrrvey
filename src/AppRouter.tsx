@@ -7,8 +7,11 @@ import NotFound from "./pages/NotFound";
 import Debug from "./pages/Debug";
 
 export function AppRouter() {
+  // Use basename only in production (GitHub Pages)
+  const basename = import.meta.env.PROD ? '/ocean-srrrvey' : '/';
+
   return (
-    <BrowserRouter basename="/ocean-srrrvey">
+    <BrowserRouter basename={basename}>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
