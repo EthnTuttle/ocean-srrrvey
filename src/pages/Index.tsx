@@ -13,7 +13,7 @@ const Index = () => {
   const [surveyService] = useState(() => new SurveyService());
   const [currentSurvey, setCurrentSurvey] = useState<OceanSurveyData | null>(null);
   const [otherSurveys, setOtherSurveys] = useState<NostrSurveyNote[]>([]);
-  const [matchingResults, setMatchingResults] = useState<Array<{ survey: NostrSurveyNote; matchScore: number; isRecent: boolean }>>([]);
+  const [matchingResults, setMatchingResults] = useState<Array<{ survey: NostrSurveyNote; matchScore: number; isRecent: boolean; matchType: string; analysis: string }>>([]);
   const [isActive, setIsActive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [inputAddress, setInputAddress] = useState('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j');
@@ -250,27 +250,27 @@ const Index = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className={`px-2 py-1 rounded text-xs ${
-                          result.matchScore > 0.8
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : result.matchScore > 0.6
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                          result.matchType === 'same-address'
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                         }`}>
-                          {Math.round(result.matchScore * 100)}% match
+                          {result.matchType === 'same-address' ? 'Same Address' : 'Cross-Address'}
                         </div>
                         {result.isRecent && (
-                          <div className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs">
+                          <div className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">
                             Recent
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      Discovery Score: {result.survey.discoveryScore || 'N/A'}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatTime(result.survey.created_at)}
+                    <div className="mb-2">
+                      <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                        {result.analysis}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Discovery Score: {result.survey.discoveryScore?.toFixed(1) || 'N/A'} • {formatTime(result.survey.created_at)}
+                      </div>
                     </div>
                   </div>
                 ))}

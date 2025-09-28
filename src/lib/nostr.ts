@@ -83,24 +83,33 @@ export class NostrClient {
   }
 
   private formatSurveyContent(oceanData: OceanSurveyData): string {
-    const recentBlocks = oceanData.blocksFound.slice(0, 5);
-    const blockSummary = recentBlocks.map(block =>
-      `Block ${block.height}: ${block.datumInfo.solverName} (${block.acceptedShares} shares)`
-    ).join('\\n');
+    const recentBlocks = oceanData.blocksFound.slice(0, 3);
+    const blockSummary = recentBlocks.length > 0
+      ? recentBlocks.map(block =>
+          `Block ${block.height}: ${block.datumInfo.solverName}`
+        ).join(', ')
+      : 'No recent blocks';
 
-    return `Ocean Mining Survey 🌊⛏️
+    const currentHashRate = oceanData.hashRateData.length > 0
+      ? oceanData.hashRateData[oceanData.hashRateData.length - 1].hashRate
+      : 0;
 
-Address: ${oceanData.address}
-Survey Time: ${new Date(oceanData.timestamp).toISOString()}
-Discovery Score: ${oceanData.discoveryScore}
+    const addressBlocks = oceanData.blocksFound.filter(block =>
+      block.solverAddress === oceanData.address
+    );
 
-Recent Blocks Found:
-${blockSummary}
+    return `🏴‍☠️ Ocean Survey Report 🌊
 
-Share Window: ${oceanData.shareWindow.size.toLocaleString()} shares
-Hash Rate Samples: ${oceanData.hashRateData.length}
+📍 Address: ${oceanData.address.slice(0, 20)}...
+⚡ Hashrate: ${currentHashRate.toFixed(1)} TH/s
+🎯 Discovery Score: ${oceanData.discoveryScore}
+⛏️ Address Blocks: ${addressBlocks.length}
+🌊 Pool Blocks: ${recentBlocks.length > 0 ? blockSummary : blockSummary}
+📊 Share Window: ${(oceanData.shareWindow.size / 1e12).toFixed(1)}T
 
-#ocean-srrrvey #bitcoin #mining`;
+Survey: ${new Date(oceanData.timestamp).toLocaleString()}
+
+#ocean-srrrvey #bitcoin #mining ${oceanData.address.slice(-8)}`;
   }
 
   async fetchSurveyNotes(limit = 50): Promise<NostrSurveyNote[]> {
