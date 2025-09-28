@@ -29,8 +29,8 @@ export class NostrClient {
         created_at: Math.floor(Date.now() / 1000),
         tags: [],
         content: JSON.stringify({
-          name: "🏴‍☠️  pirating the Ocean 🏴‍☠️",
-          about: "Ocean mining pool surveyor and data pirate",
+          name: "🏴‍☠️  Telehash Pirate 🏴‍☠️",
+          about: "Telehash mining pool surveyor and data pirate",
           picture: "https://raw.githubusercontent.com/EthnTuttle/ocean-srrrvey/main/public/pirate-ocean.svg"
         })
       };
@@ -68,7 +68,7 @@ export class NostrClient {
       pubkey: this.publicKey,
       created_at: Math.floor(Date.now() / 1000),
       tags: [
-        ['t', 'ocean-srrrvey'],
+        ['t', 'telehash-pirate'],
         ['address', oceanData.address],
         ['timestamp', oceanData.timestamp],
         ['discovery-score', oceanData.discoveryScore.toString()]
@@ -105,7 +105,7 @@ export class NostrClient {
       block.solverAddress === oceanData.address
     );
 
-    return `🏴‍☠️ Ocean Survey Report 🌊
+    return `🏴‍☠️ Telehash Pirate Report 🌊
 
 📍 Address: ${oceanData.address.slice(0, 20)}...
 ⚡ Hashrate: ${currentHashRate.toFixed(1)} TH/s
@@ -116,7 +116,7 @@ export class NostrClient {
 
 Survey: ${new Date(oceanData.timestamp).toLocaleString()}
 
-#ocean-srrrvey #bitcoin #mining ${oceanData.address.slice(-8)}`;
+#telehash-pirate #bitcoin #mining ${oceanData.address.slice(-8)}`;
   }
 
   async fetchSurveyNotes(limit = 50): Promise<NostrSurveyNote[]> {
@@ -125,7 +125,7 @@ Survey: ${new Date(oceanData.timestamp).toLocaleString()}
 
       const sub = this.pool.subscribeMany(this.relays, [{
         kinds: [1],
-        '#t': ['ocean-srrrvey'],
+        '#t': ['telehash-pirate'],
         limit
       }], {
         onevent(event: Event) {

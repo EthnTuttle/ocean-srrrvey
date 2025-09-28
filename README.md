@@ -1,51 +1,52 @@
-# MKStack
+# Telehash Pirate 🏴‍☠️⛏️
 
-**The Complete Framework for Building Nostr Clients with AI**
+**Bitcoin Mining Pool Telehash Monitor & Nostr Reporter**
 
-MKStack is an AI-powered framework for building Nostr applications with React 18.x, TailwindCSS 3.x, Vite, shadcn/ui, and Nostrify. Build powerful Nostr applications with AI-first development - from social feeds to private messaging, MKStack provides everything you need to create decentralized apps on the Nostr protocol.
+Telehash Pirate is a Bitcoin mining pool monitoring application that surveys Ocean.xyz mining data and reports findings to the Nostr network. Built with React, TypeScript, and Nostr integration, it provides real-time mining statistics, temporal delta analysis, and community comparison features.
 
 ## 🚀 Quick Start
 
-Build your Nostr app in 3 simple steps:
-
-### 1. Install & Create
+### Local Development
 ```bash
-npm install -g @getstacks/stacks
-stacks mkstack
+git clone https://github.com/EthnTuttle/ocean-srrrvey.git
+cd ocean-srrrvey
+npm install
+npm run dev
 ```
 
-### 2. Build with AI
+### Build & Deploy
 ```bash
-stacks agent
-# Tell Dork AI what you want: "Build a group chat application"
+npm run build
+npm run test
 ```
 
-### 3. Deploy Instantly
-```bash
-npm run deploy
-# ✅ App deployed to NostrDeploy.com!
-```
+### Monitor Mining Pool
+1. Enter any Bitcoin address in the interface
+2. View real-time worker statistics and hashrates
+3. See community comparisons and temporal analysis
+4. Data is automatically shared on Nostr with #telehash-pirate hashtag
 
-## ✨ What Makes MKStack Special
+## ✨ Features
 
-- **🤖 AI-First Development**: Build complete Nostr apps with just one prompt using Dork AI agent
-- **⚡ 8 Minutes Average**: From idea to deployed application in minutes, not months
-- **🔗 50+ NIPs Supported**: Comprehensive Nostr protocol implementation
-- **🎨 Beautiful UI**: 48+ shadcn/ui components with light/dark theme support
-- **🔐 Built-in Security**: NIP-07 browser signing, NIP-44 encryption, event validation
-- **💰 Payments Ready**: Lightning zaps (NIP-57), Cashu wallets (NIP-60), Wallet Connect (NIP-47)
-- **📱 Production Ready**: TypeScript, testing, deployment, and responsive design included
+- **⚡ Real-time Mining Stats**: Live worker statistics, hashrates, and pool data from Ocean.xyz
+- **📊 Temporal Delta Analysis**: Track mining activity changes over time with detailed trends
+- **🌐 Community Comparison**: Compare your mining performance with other addresses
+- **🏴‍☠️ Nostr Integration**: Automatic survey reporting to decentralized social network
+- **🔐 Session Persistence**: Nostr keys persist during browsing session
+- **📱 Responsive Design**: Works on desktop and mobile devices
+- **⚙️ CORS Handling**: Smart proxy configuration for production deployment
+- **🎯 Address-based Matching**: Intelligent matching of survey data by Bitcoin address
 
 ## 🛠 Technology Stack
 
-- **React 18.x**: Stable version with hooks, concurrent rendering, and improved performance
-- **TailwindCSS 3.x**: Utility-first CSS framework for styling
-- **Vite**: Fast build tool and development server
-- **shadcn/ui**: 48+ unstyled, accessible UI components built with Radix UI
-- **Nostrify**: Nostr protocol framework for Deno and web
-- **React Router**: Client-side routing with BrowserRouter
-- **TanStack Query**: Data fetching, caching, and state management
-- **TypeScript**: Type-safe JavaScript development
+- **React 18.x**: Modern React with hooks and concurrent rendering
+- **TypeScript**: Type-safe development with comprehensive interfaces
+- **TailwindCSS 3.x**: Utility-first CSS framework with dark mode support
+- **Vite**: Fast build tool with environment-conditional routing
+- **Nostr-tools**: Direct Nostr protocol integration for event publishing
+- **Ocean.xyz API**: Bitcoin mining pool data integration
+- **React Router**: Client-side routing with GitHub Pages compatibility
+- **CORS Proxy**: Production-ready API access through corsproxy.io
 
 ## 🎯 Real-World Examples
 

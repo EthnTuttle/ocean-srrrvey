@@ -13,7 +13,7 @@ export class SurveyService {
     let secretKey = existingSecretKey;
 
     if (!secretKey && typeof window !== 'undefined') {
-      const storedKey = sessionStorage.getItem('ocean-survey-key');
+      const storedKey = sessionStorage.getItem('telehash-pirate-key');
       if (storedKey) {
         try {
           const keyArray = JSON.parse(storedKey);
@@ -30,7 +30,7 @@ export class SurveyService {
     // Store the key for the session
     if (typeof window !== 'undefined') {
       const keyArray = Array.from(this.nostrClient.getSecretKey());
-      sessionStorage.setItem('ocean-survey-key', JSON.stringify(keyArray));
+      sessionStorage.setItem('telehash-pirate-key', JSON.stringify(keyArray));
     }
   }
 
@@ -129,13 +129,54 @@ export class SurveyService {
       }
     }
 
-    return results.sort((a, b) => {
+    const sortedResults = results.sort((a, b) => {
       // Sort by match type first (same address first), then by score
       if (a.matchType !== b.matchType) {
         return a.matchType === 'same-address' ? -1 : 1;
       }
       return b.matchScore - a.matchScore;
     });
+
+    // Add network trend analysis as the first item if we have cross-address matches
+    const crossAddressMatches = sortedResults.filter(r => r.matchType === 'cross-address');
+    if (crossAddressMatches.length > 0) {
+      const networkTrend = this.analyzeNetworkTrend(mySurvey, crossAddressMatches);
+      if (networkTrend) {
+        sortedResults.unshift(networkTrend);
+      }
+    }
+
+    return sortedResults;
+  }
+
+  private analyzeNetworkTrend(
+    mySurvey: OceanSurveyData,
+    crossAddressMatches: Array<{ survey: NostrSurveyNote; matchScore: number; isRecent: boolean; matchType: string; analysis: string }>
+  ): { survey: NostrSurveyNote; matchScore: number; isRecent: boolean; matchType: string; analysis: string } | null {
+    if (crossAddressMatches.length < 2) return null;
+
+    const myScore = mySurvey.discoveryScore;
+    const otherScores = crossAddressMatches.map(m => m.survey.discoveryScore || 0).filter(s => s > 0);
+
+    if (otherScores.length === 0) return null;
+
+    const avgOtherScore = otherScores.reduce((a, b) => a + b, 0) / otherScores.length;
+    const myRank = otherScores.filter(s => s < myScore).length + 1;
+    const totalAddresses = otherScores.length + 1;
+    const percentile = Math.round(((totalAddresses - myRank) / totalAddresses) * 100);
+
+    const trend = myScore > avgOtherScore * 1.2 ? 'above average' :
+                  myScore < avgOtherScore * 0.8 ? 'below average' : 'average';
+
+    const analysis = `Network overview: Your mining ranks ${myRank}/${totalAddresses} (${percentile}th percentile) - performance ${trend} vs community average ${avgOtherScore.toFixed(1)}`;
+
+    return {
+      survey: crossAddressMatches[0].survey, // Use first survey as placeholder
+      matchScore: 1.0,
+      isRecent: true,
+      matchType: 'network-trend',
+      analysis
+    };
   }
 
   private calculateMatchScore(
@@ -217,23 +258,28 @@ export class SurveyService {
     const myScore = mySurvey.discoveryScore;
     const otherScore = otherSurvey.discoveryScore || 0;
 
-    const scoreDiff = Math.abs(myScore - otherScore);
-    const scoreDeviation = scoreDiff / Math.max(myScore, otherScore, 1);
+    const scoreDiff = myScore - otherScore;
+    const scoreDeviation = Math.abs(scoreDiff) / Math.max(myScore, otherScore, 1);
+
+    // Show temporal delta with direction
+    const deltaDirection = scoreDiff > 0 ? 'increased' : scoreDiff < 0 ? 'decreased' : 'unchanged';
+    const deltaAmount = Math.abs(scoreDiff).toFixed(1);
 
     if (timeDiffMinutes < 5) {
       if (scoreDeviation < 0.1) {
-        return `Concurrent survey ${timeDiffMinutes}m ago shows identical results (±${scoreDiff.toFixed(1)} score)`;
+        return `Real-time: Activity stable (${deltaDirection} ${deltaAmount} score in ${timeDiffMinutes}m)`;
       } else {
-        return `Concurrent survey ${timeDiffMinutes}m ago shows different results (${scoreDiff.toFixed(1)} score difference)`;
+        return `Real-time: Activity ${deltaDirection} by ${deltaAmount} score in ${timeDiffMinutes}m`;
       }
     } else if (timeDiffMinutes < 30) {
-      if (scoreDeviation < 0.2) {
-        return `Recent survey ${timeDiffMinutes}m ago confirms similar mining activity`;
-      } else {
-        return `Recent survey ${timeDiffMinutes}m ago shows mining activity changed`;
-      }
+      const trend = scoreDiff > 5 ? 'ramping up' : scoreDiff < -5 ? 'slowing down' : 'steady';
+      return `${timeDiffMinutes}m delta: Mining ${trend} (${deltaDirection} ${deltaAmount} score)`;
+    } else if (timeDiffMinutes < 120) {
+      const hours = (timeDiffMinutes / 60).toFixed(1);
+      return `${hours}h delta: Activity ${deltaDirection} by ${deltaAmount} score since then`;
     } else {
-      return `Earlier survey ${timeDiffMinutes}m ago for comparison`;
+      const hours = Math.floor(timeDiffMinutes / 60);
+      return `Historical: ${hours}h ago showed ${otherScore.toFixed(1)} score (now ${myScore.toFixed(1)})`;
     }
   }
 
@@ -244,13 +290,17 @@ export class SurveyService {
   ): string {
     const myScore = mySurvey.discoveryScore;
     const otherScore = otherSurvey.discoveryScore || 0;
+    const timeDiffMinutes = Math.floor(Math.abs(new Date(mySurvey.timestamp).getTime() - (otherSurvey.created_at * 1000)) / (1000 * 60));
+
+    const ratio = myScore > 0 ? otherScore / myScore : 0;
+    const percentDiff = Math.abs((ratio - 1) * 100).toFixed(0);
 
     if (otherScore > myScore * 1.5) {
-      return `Address ${otherAddress.slice(-8)} shows higher mining activity (${otherScore.toFixed(1)} vs ${myScore.toFixed(1)})`;
+      return `Network trend: ${otherAddress.slice(-8)} outperforming by ${percentDiff}% (${otherScore.toFixed(1)} vs ${myScore.toFixed(1)}) ${timeDiffMinutes}m ago`;
     } else if (otherScore < myScore * 0.7) {
-      return `Address ${otherAddress.slice(-8)} shows lower mining activity (${otherScore.toFixed(1)} vs ${myScore.toFixed(1)})`;
+      return `Network trend: Your address outperforming ${otherAddress.slice(-8)} by ${percentDiff}% (${myScore.toFixed(1)} vs ${otherScore.toFixed(1)}) now vs ${timeDiffMinutes}m ago`;
     } else {
-      return `Address ${otherAddress.slice(-8)} shows similar mining activity (${otherScore.toFixed(1)} vs ${myScore.toFixed(1)})`;
+      return `Network peer: ${otherAddress.slice(-8)} similar performance (${otherScore.toFixed(1)} vs ${myScore.toFixed(1)}, ±${percentDiff}%)`;
     }
   }
 

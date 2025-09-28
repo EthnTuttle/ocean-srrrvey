@@ -6,7 +6,7 @@ import type { OceanSurveyData, NostrSurveyNote, AddressStats } from '../lib/type
 
 const Index = () => {
   useSeoMeta({
-    title: 'Ocean Srrrvey - Bitcoin Mining Pool Monitor',
+    title: 'Telehash Pirate - Bitcoin Mining Pool Monitor',
     description: 'Monitor Ocean mining pool data and share findings on Nostr',
   });
 
@@ -116,10 +116,10 @@ const Index = () => {
       <div className="max-w-6xl mx-auto">
         <header className="mb-8 text-center">
           <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">
-            Ocean Srrrvey 🌊⛏️
+            Telehash Pirate 🏴‍☠️⛏️
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Bitcoin Mining Pool Monitor & Nostr Reporter
+            Bitcoin Mining Pool Telehash Monitor & Nostr Reporter
           </p>
 
           {/* Address Input Form */}
@@ -218,7 +218,7 @@ const Index = () => {
                     {surveyService.getNostrClient().getNpub()}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
-                    🏴‍☠️ pirating the Ocean 🏴‍☠️
+                    🏴‍☠️ Telehash Pirate 🏴‍☠️
                   </p>
                 </div>
               </div>
@@ -245,16 +245,26 @@ const Index = () => {
                 {matchingResults.map((result, idx) => (
                   <div key={idx} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Surveyor: {result.survey.pubkey.slice(0, 16)}...
-                      </div>
+                      {result.matchType !== 'network-trend' && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Surveyor: {result.survey.pubkey.slice(0, 16)}...
+                        </div>
+                      )}
+                      {result.matchType === 'network-trend' && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Community Analysis
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <div className={`px-2 py-1 rounded text-xs ${
                           result.matchType === 'same-address'
                             ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : result.matchType === 'network-trend'
+                            ? 'bg-gradient-to-r from-green-100 to-blue-100 text-green-800 dark:from-green-900 dark:to-blue-900 dark:text-green-200'
                             : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                         }`}>
-                          {result.matchType === 'same-address' ? 'Same Address' : 'Cross-Address'}
+                          {result.matchType === 'same-address' ? 'Same Address' :
+                           result.matchType === 'network-trend' ? 'Network Trend' : 'Cross-Address'}
                         </div>
                         {result.isRecent && (
                           <div className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">
@@ -269,7 +279,10 @@ const Index = () => {
                         {result.analysis}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Discovery Score: {result.survey.discoveryScore?.toFixed(1) || 'N/A'} • {formatTime(result.survey.created_at)}
+                        {result.matchType === 'network-trend'
+                          ? `Based on ${matchingResults.filter(r => r.matchType === 'cross-address').length} community surveys`
+                          : `Discovery Score: ${result.survey.discoveryScore?.toFixed(1) || 'N/A'} • ${formatTime(result.survey.created_at)}`
+                        }
                       </div>
                     </div>
                   </div>
@@ -298,7 +311,7 @@ const Index = () => {
             Page will reload in {lastUpdate ? Math.max(0, 60 - Math.floor((Date.now() - lastUpdate.getTime()) / 1000)) : 60}s
           </p>
           <p className="mt-1">
-            Using #ocean-srrrvey hashtag on Nostr for data sharing
+            Using #telehash-pirate hashtag on Nostr for data sharing
           </p>
         </footer>
       </div>
