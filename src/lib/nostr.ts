@@ -31,7 +31,7 @@ export class NostrClient {
         content: JSON.stringify({
           name: "🏴‍☠️  pirating the Ocean 🏴‍☠️",
           about: "Ocean mining pool surveyor and data pirate",
-          picture: "https://i.nostr.build/ocean-pirate.jpg"
+          picture: "https://raw.githubusercontent.com/EthnTuttle/ocean-srrrvey/main/public/pirate-ocean.svg"
         })
       };
 
