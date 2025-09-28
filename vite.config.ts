@@ -8,6 +8,18 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api/ocean': {
+        target: 'https://ocean.xyz',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/ocean/, ''),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Proxying Ocean.xyz request:', req.url);
+          });
+        }
+      }
+    }
   },
   plugins: [
     react(),

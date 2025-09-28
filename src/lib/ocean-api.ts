@@ -1,7 +1,18 @@
 import type { BlockFoundData, ShareWindowData, HashRateData, OceanSurveyData, AddressStats, WorkerStats } from './types';
 
 export class OceanAPI {
-  private readonly baseUrl = 'https://ocean.xyz';
+  private readonly baseUrl: string;
+
+  constructor() {
+    // Use different strategies for dev vs production to handle CORS
+    if (import.meta.env.DEV) {
+      // Development: use Vite proxy
+      this.baseUrl = '/api/ocean';
+    } else {
+      // Production: use CORS proxy service
+      this.baseUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ocean.xyz');
+    }
+  }
 
   async getBlocksFound(): Promise<BlockFoundData[]> {
     try {
