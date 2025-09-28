@@ -8,7 +8,7 @@ import Debug from "./pages/Debug";
 
 export function AppRouter() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/ocean-srrrvey">
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Index />} />
