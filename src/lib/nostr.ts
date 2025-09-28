@@ -9,7 +9,7 @@ export class NostrClient {
     'wss://relay.damus.io',
     'wss://nos.lol',
     'wss://relay.nostr.band',
-    'wss://nostr.wine'
+    'wss://nostr-pub.wellorder.net'
   ];
 
   constructor(existingSecretKey?: Uint8Array) {
@@ -17,8 +17,8 @@ export class NostrClient {
     this.publicKey = getPublicKey(this.secretKey);
     this.pool = new SimplePool();
 
-    // Set profile on initialization
-    this.setProfile();
+    // Set profile on initialization (but don't wait for it)
+    setTimeout(() => this.setProfile(), 1000);
   }
 
   private async setProfile(): Promise<void> {
@@ -36,9 +36,13 @@ export class NostrClient {
       };
 
       const signedProfileEvent = finalizeEvent(profileEvent, this.secretKey);
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         this.relays.map(relay => this.pool.publish([relay], signedProfileEvent))
       );
+
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      console.log(`Profile published to ${successful}/${this.relays.length} relays`);
+
     } catch (error) {
       console.error('Failed to set profile:', error);
     }
@@ -78,7 +82,10 @@ export class NostrClient {
       this.relays.map(relay => this.pool.publish([relay], signedEvent))
     );
 
-    console.log('Published to relays:', publishedToRelays);
+    // Log only successful publications
+    const successful = publishedToRelays.filter(result => result.status === 'fulfilled');
+    console.log(`Published to ${successful.length}/${this.relays.length} relays successfully`);
+
     return signedEvent.id;
   }
 

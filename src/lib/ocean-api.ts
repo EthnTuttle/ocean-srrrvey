@@ -10,7 +10,7 @@ export class OceanAPI {
       this.baseUrl = '/api/ocean';
     } else {
       // Production: use CORS proxy service
-      this.baseUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ocean.xyz');
+      this.baseUrl = 'https://corsproxy.io/?https://ocean.xyz';
     }
   }
 
