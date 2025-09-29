@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { SurveyService } from '../lib/survey-service';
 import { AddressStatsDisplay } from '../components/AddressStats';
+import { CookieConsent } from '../components/CookieConsent';
+import { CookieManager } from '../lib/cookies';
 import type { OceanSurveyData, NostrSurveyNote, AddressStats } from '../lib/types';
 
 const Index = () => {
@@ -19,9 +21,21 @@ const Index = () => {
   const [inputAddress, setInputAddress] = useState('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j');
   const [currentAddress, setCurrentAddress] = useState('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j');
   const [addressStats, setAddressStats] = useState<AddressStats | null>(null);
+  const [showCookieConsent, setShowCookieConsent] = useState(true);
   const reloadTimeoutRef = useRef<NodeJS.Timeout>();
 
+  const handleCookieAccept = () => {
+    surveyService.storePirateKey();
+    setShowCookieConsent(false);
+  };
+
   useEffect(() => {
+    // Check if user has already consented to cookies
+    const consent = CookieManager.getCookie('telehash-pirate-consent');
+    if (consent) {
+      setShowCookieConsent(false);
+    }
+
     // Generate new key and start survey when page opens
     startSurvey();
 
@@ -343,6 +357,8 @@ const Index = () => {
             </div>
           </div>
         </footer>
+
+        {showCookieConsent && <CookieConsent onAccept={handleCookieAccept} />}
       </div>
     </div>
   );

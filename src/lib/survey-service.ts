@@ -1,5 +1,6 @@
 import { NostrClient } from './nostr';
 import { OceanAPI } from './ocean-api';
+import { CookieManager } from './cookies';
 import type { OceanSurveyData, NostrSurveyNote } from './types';
 
 export class SurveyService {
@@ -9,28 +10,26 @@ export class SurveyService {
   private isRunning = false;
 
   constructor(existingSecretKey?: Uint8Array) {
-    // Try to load existing key from sessionStorage first (persists during browsing session)
+    // Try to load existing key from cookies first (persists across sessions)
     let secretKey = existingSecretKey;
 
-    if (!secretKey && typeof window !== 'undefined') {
-      const storedKey = sessionStorage.getItem('telehash-pirate-key');
-      if (storedKey) {
-        try {
-          const keyArray = JSON.parse(storedKey);
-          secretKey = new Uint8Array(keyArray);
-        } catch (error) {
-          console.error('Failed to parse stored key:', error);
-        }
-      }
+    if (!secretKey) {
+      secretKey = CookieManager.getTelehashPirateKey();
     }
 
     this.nostrClient = new NostrClient(secretKey);
     this.oceanApi = new OceanAPI();
 
-    // Store the key for the session
+    // Store the key in cookies (only if cookies are accepted)
+    if (typeof window !== 'undefined' && CookieManager.getCookie('telehash-pirate-consent') === 'accepted') {
+      CookieManager.setTelehashPirateKey(this.nostrClient.getSecretKey());
+    }
+  }
+
+  // Method to store key after cookie consent
+  storePirateKey(): void {
     if (typeof window !== 'undefined') {
-      const keyArray = Array.from(this.nostrClient.getSecretKey());
-      sessionStorage.setItem('telehash-pirate-key', JSON.stringify(keyArray));
+      CookieManager.setTelehashPirateKey(this.nostrClient.getSecretKey());
     }
   }
 

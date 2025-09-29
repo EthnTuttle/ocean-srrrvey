@@ -31,7 +31,8 @@ export class NostrClient {
         content: JSON.stringify({
           name: "🏴‍☠️  Telehash Pirate 🏴‍☠️",
           about: "Telehash mining pool surveyor and data pirate",
-          picture: "https://telehashpirate.com/pirate-ocean.svg"
+          picture: "https://telehashpirate.com/pirate-ocean.svg",
+          website: "https://telehashpirate.com"
         })
       };
 
