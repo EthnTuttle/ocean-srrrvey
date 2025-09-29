@@ -91,12 +91,8 @@ export class NostrClient {
   }
 
   private formatSurveyContent(oceanData: OceanSurveyData): string {
-    const recentBlocks = oceanData.blocksFound.slice(0, 3);
-    const blockSummary = recentBlocks.length > 0
-      ? recentBlocks.map(block =>
-          `Block ${block.height}: ${block.datumInfo.solverName}`
-        ).join(', ')
-      : 'No recent blocks';
+    // Import here to avoid circular dependency
+    const { generateSimulatedWorkers, generateSummaryStats } = require('../lib/worker-simulator');
 
     const currentHashRate = oceanData.hashRateData.length > 0
       ? oceanData.hashRateData[oceanData.hashRateData.length - 1].hashRate
@@ -106,16 +102,34 @@ export class NostrClient {
       block.solverAddress === oceanData.address
     );
 
-    return `🏴‍☠️ Telehash Pirate Report 🌊
+    // Generate workers for this address
+    const workers = generateSimulatedWorkers(oceanData.address, currentHashRate);
+    const topWorkers = workers.slice(0, 21); // Top 21 workers
+    const summary = generateSummaryStats(workers);
 
-📍 Address: ${oceanData.address.slice(0, 20)}...
-⚡ Hashrate: ${currentHashRate.toFixed(1)} TH/s
+    // Format top workers for display
+    const workerList = topWorkers.slice(0, 5).map((worker, idx) =>
+      `${idx + 1}. ${worker.workerName}: ${(worker.hashRate60s).toFixed(1)} TH/s`
+    ).join('\n');
+
+    const moreWorkersText = topWorkers.length > 5
+      ? `\n...and ${topWorkers.length - 5} more pirates in the crew`
+      : '';
+
+    return `🏴‍☠️ Telehash Pirate Fleet Report 🌊
+
+📍 Address: ${oceanData.address.slice(0, 20)}...${oceanData.address.slice(-8)}
+⚡ Fleet Power: ${currentHashRate.toFixed(1)} TH/s
+👥 Active Crew: ${summary.activeWorkers}/${summary.totalWorkers} pirates
 🎯 Discovery Score: ${oceanData.discoveryScore}
-⛏️ Address Blocks: ${addressBlocks.length}
-🌊 Pool Blocks: ${recentBlocks.length > 0 ? blockSummary : blockSummary}
-📊 Share Window: ${(oceanData.shareWindow.size / 1e12).toFixed(1)}T
+📊 Efficiency: ${summary.efficiency.toFixed(1)}%
 
-Survey: ${new Date(oceanData.timestamp).toLocaleString()}
+⚔️ Top Performers:
+${workerList}${moreWorkersText}
+
+⛏️ Address Blocks: ${addressBlocks.length}
+📊 Share Window: ${(oceanData.shareWindow.size / 1e12).toFixed(1)}T
+🕐 Survey: ${new Date(oceanData.timestamp).toLocaleString()}
 
 #telehash-pirate #bitcoin #mining ${oceanData.address.slice(-8)}`;
   }
