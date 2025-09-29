@@ -220,6 +220,9 @@ const Index = () => {
                   <p className="text-xs text-gray-400 mt-1">
                     🏴‍☠️ Telehash Pirate 🏴‍☠️
                   </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                    Follow this npub to see all mining reports!
+                  </p>
                 </div>
               </div>
             ) : (
@@ -290,17 +293,25 @@ const Index = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {otherSurveys.length === 0
                     ? 'Loading community surveys...'
                     : 'No matching surveys found from other users'
                   }
                 </p>
                 {otherSurveys.length > 0 && (
-                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
                     {otherSurveys.length} total surveys found
                   </p>
                 )}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-w-sm mx-auto">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Help grow the community! 🏴‍☠️
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                    Your surveys are automatically shared on Nostr with <code className="bg-gray-200 dark:bg-gray-600 px-1 py-0.5 rounded text-xs">#telehash-pirate</code>
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -310,9 +321,27 @@ const Index = () => {
           <p>
             Page will reload in {lastUpdate ? Math.max(0, 60 - Math.floor((Date.now() - lastUpdate.getTime()) / 1000)) : 60}s
           </p>
-          <p className="mt-1">
-            Using #telehash-pirate hashtag on Nostr for data sharing
-          </p>
+          <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-blue-800 dark:text-blue-200 font-medium mb-2">
+              🏴‍☠️ Join the Nostr Community!
+            </p>
+            <p className="text-blue-700 dark:text-blue-300 text-xs mb-2">
+              Search <code className="bg-blue-100 dark:bg-blue-800 px-1 py-0.5 rounded">#telehash-pirate</code> on your favorite Nostr app:
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 text-xs">
+              <a href="https://primal.net" target="_blank" rel="noopener noreferrer"
+                 className="text-blue-600 dark:text-blue-400 hover:underline">Primal</a>
+              <span className="text-blue-400">•</span>
+              <a href="https://damus.io" target="_blank" rel="noopener noreferrer"
+                 className="text-blue-600 dark:text-blue-400 hover:underline">Damus</a>
+              <span className="text-blue-400">•</span>
+              <a href="https://snort.social" target="_blank" rel="noopener noreferrer"
+                 className="text-blue-600 dark:text-blue-400 hover:underline">Snort</a>
+              <span className="text-blue-400">•</span>
+              <a href="https://nostrudel.ninja" target="_blank" rel="noopener noreferrer"
+                 className="text-blue-600 dark:text-blue-400 hover:underline">Nostrudel</a>
+            </div>
+          </div>
         </footer>
       </div>
     </div>
