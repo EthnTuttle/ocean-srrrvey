@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vitest/config";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command: _command }) => ({
   base: '/',
   server: {
     host: "::",
@@ -14,8 +14,8 @@ export default defineConfig(({ command }) => ({
         target: 'https://ocean.xyz',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/ocean/, ''),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (_proxyReq, req, _res) => {
             console.log('Proxying Ocean.xyz request:', req.url);
           });
         }

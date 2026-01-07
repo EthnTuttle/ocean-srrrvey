@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { OceanAPI } from '../lib/ocean-api';
 import { generateSimulatedWorkers } from '../lib/worker-simulator';
-import { WorkerGrid } from './WorkerGrid';
 import { SummaryTicker } from './SummaryTicker';
 import type { AddressStats, WorkerStats } from '../lib/types';
 
@@ -16,15 +15,9 @@ export const AddressStatsDisplay = ({ address, onStatsUpdate }: AddressStatsProp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const oceanApi = new OceanAPI();
+  const oceanApi = useMemo(() => new OceanAPI(), []);
 
-  useEffect(() => {
-    if (address) {
-      fetchStats();
-    }
-  }, [address]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     if (!address.trim()) return;
 
     setLoading(true);
@@ -34,9 +27,15 @@ export const AddressStatsDisplay = ({ address, onStatsUpdate }: AddressStatsProp
       const addressStats = await oceanApi.getAddressStats(address.trim());
       setStats(addressStats);
 
-      // Generate simulated workers based on the total hashrate
-      const simulatedWorkers = generateSimulatedWorkers(address.trim(), addressStats.totalHashRate);
-      setWorkers(simulatedWorkers);
+      // Use real worker data if available, otherwise generate Ocean-style simulated workers
+      if (addressStats.workers && addressStats.workers.length > 1) {
+        // We have real worker data from Ocean API
+        setWorkers(addressStats.workers);
+      } else {
+        // Generate realistic Ocean-style workers with proper naming
+        const simulatedWorkers = generateSimulatedWorkers(address.trim(), addressStats.totalHashRate);
+        setWorkers(simulatedWorkers);
+      }
 
       onStatsUpdate?.(addressStats);
     } catch (err) {
@@ -46,7 +45,13 @@ export const AddressStatsDisplay = ({ address, onStatsUpdate }: AddressStatsProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, oceanApi, onStatsUpdate]);
+
+  useEffect(() => {
+    if (address) {
+      fetchStats();
+    }
+  }, [address, fetchStats]);
 
   const formatHashRate = (hashRate: number): string => {
     if (hashRate === 0) return '0 H/s';
@@ -136,50 +141,62 @@ export const AddressStatsDisplay = ({ address, onStatsUpdate }: AddressStatsProp
 
   return (
     <div className="space-y-6">
-      {/* Summary Ticker - Prominent at top */}
-      <SummaryTicker workers={workers} />
-
-      {/* Worker Grid - Main focus */}
-      <WorkerGrid workers={workers} maxWorkers={21} />
-
-      {/* Pool Summary - Moved to bottom */}
+      {/* Main Account Summary */}
       {stats && (
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Pool Summary</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {formatHashRate(stats.totalHashRate)}
+        <div className="bg-gradient-to-br from-blue-900 via-gray-900 to-purple-900 text-white rounded-lg p-6 shadow-xl">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <span className="text-3xl">🏴‍☠️</span>
+              <div>
+                <h3 className="text-xl font-bold">Telehash Pirate Fleet</h3>
+                <div className="text-sm text-gray-300">Account Summary</div>
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Total Hashrate</div>
             </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {formatShares(stats.totalShares)}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Total Shares</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {workers.length}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Workers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xs text-gray-600 dark:text-gray-400">Last Updated</div>
-              <div className="text-xs text-gray-500 dark:text-gray-500">
+            <div className="text-right">
+              <div className="text-xs text-gray-400">Last Updated</div>
+              <div className="text-sm text-gray-300">
                 {formatTime(stats.lastUpdate)}
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-300 dark:border-gray-600 pt-3">
-            <p className="text-xs font-mono text-gray-600 dark:text-gray-400 break-all">
-              <span className="font-medium">Address:</span> {stats.address}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div className="text-center p-4 bg-black bg-opacity-20 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-400 mb-1">
+                {formatHashRate(stats.totalHashRate)}
+              </div>
+              <div className="text-sm text-gray-300">Total Fleet Power</div>
+            </div>
+            <div className="text-center p-4 bg-black bg-opacity-20 rounded-lg">
+              <div className="text-2xl font-bold text-green-400 mb-1">
+                {formatShares(stats.totalShares)}
+              </div>
+              <div className="text-sm text-gray-300">Total Shares</div>
+            </div>
+            <div className="text-center p-4 bg-black bg-opacity-20 rounded-lg">
+              <div className="text-2xl font-bold text-purple-400 mb-1">
+                {stats.activeWorkers}/{workers.length}
+              </div>
+              <div className="text-sm text-gray-300">Active Crew</div>
+            </div>
+            <div className="text-center p-4 bg-black bg-opacity-20 rounded-lg">
+              <div className="text-2xl font-bold text-orange-400 mb-1">
+                {workers.length > 0 ? (stats.totalHashRate / workers.length).toFixed(1) : '0'} TH/s
+              </div>
+              <div className="text-sm text-gray-300">Avg Per Worker</div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-600 pt-4">
+            <p className="text-sm font-mono text-gray-300 break-all">
+              <span className="font-medium text-white">⚓ Address:</span> {stats.address}
             </p>
           </div>
         </div>
       )}
+
+      {/* Worker Ticker - Cycles through all workers */}
+      <SummaryTicker workers={workers} />
     </div>
   );
 };

@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { SurveyService } from '../lib/survey-service';
 import { AddressStatsDisplay } from '../components/AddressStats';
 import { CookieConsent } from '../components/CookieConsent';
 import { CookieManager } from '../lib/cookies';
-import type { OceanSurveyData, NostrSurveyNote, AddressStats } from '../lib/types';
+import type { OceanSurveyData, NostrSurveyNote } from '../lib/types';
 
 const Index = () => {
   useSeoMeta({
@@ -20,7 +20,6 @@ const Index = () => {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [inputAddress, setInputAddress] = useState('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j');
   const [currentAddress, setCurrentAddress] = useState('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j');
-  const [addressStats, setAddressStats] = useState<AddressStats | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(true);
   const reloadTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -29,46 +28,7 @@ const Index = () => {
     setShowCookieConsent(false);
   };
 
-  useEffect(() => {
-    // Check if user has already consented to cookies
-    const consent = CookieManager.getCookie('telehash-pirate-consent');
-    if (consent) {
-      setShowCookieConsent(false);
-    }
-
-    // Generate new key and start survey when page opens
-    startSurvey();
-
-    // Set up page reload after 1 minute
-    reloadTimeoutRef.current = setTimeout(() => {
-      window.location.reload();
-    }, 60 * 1000);
-
-    return () => {
-      if (reloadTimeoutRef.current) {
-        clearTimeout(reloadTimeoutRef.current);
-      }
-      surveyService.disconnect();
-    };
-  }, []);
-
-  const handleAddressSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', { inputAddress, currentAddress });
-
-    if (inputAddress.trim()) {
-      const trimmedAddress = inputAddress.trim();
-      console.log('Starting survey for:', trimmedAddress);
-      setCurrentAddress(trimmedAddress);
-      startSurvey(trimmedAddress);
-    }
-  };
-
-  const handleAddressStatsUpdate = (stats: AddressStats) => {
-    setAddressStats(stats);
-  };
-
-  const startSurvey = async (address?: string) => {
+  const startSurvey = useCallback(async (address?: string) => {
     const targetAddress = address || currentAddress;
 
     try {
@@ -112,6 +72,41 @@ const Index = () => {
     } catch (error) {
       console.error('Error starting survey:', error);
       setIsActive(false);
+    }
+  }, [currentAddress, surveyService, currentSurvey]);
+
+  useEffect(() => {
+    // Check if user has already consented to cookies
+    const consent = CookieManager.getCookie('telehash-pirate-consent');
+    if (consent) {
+      setShowCookieConsent(false);
+    }
+
+    // Generate new key and start survey when page opens
+    startSurvey();
+
+    // Set up page reload after 1 minute
+    reloadTimeoutRef.current = setTimeout(() => {
+      window.location.reload();
+    }, 60 * 1000);
+
+    return () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+      }
+      surveyService.disconnect();
+    };
+  }, [startSurvey, surveyService]);
+
+  const handleAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', { inputAddress, currentAddress });
+
+    if (inputAddress.trim()) {
+      const trimmedAddress = inputAddress.trim();
+      console.log('Starting survey for:', trimmedAddress);
+      setCurrentAddress(trimmedAddress);
+      startSurvey(trimmedAddress);
     }
   };
 
@@ -165,7 +160,6 @@ const Index = () => {
         <div className="mb-8">
           <AddressStatsDisplay
             address={currentAddress}
-            onStatsUpdate={handleAddressStatsUpdate}
           />
         </div>
 

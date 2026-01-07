@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, MockedFunction } from 'vitest';
 import { OceanAPI } from './ocean-api';
+import type { BlockFoundData } from './types';
 
 // Mock fetch for testing
 global.fetch = vi.fn();
 
-const mockFetch = fetch as vi.MockedFunction<typeof fetch>;
+const mockFetch = fetch as MockedFunction<typeof fetch>;
 
 describe('OceanAPI', () => {
   let oceanApi: OceanAPI;
@@ -160,7 +161,7 @@ describe('OceanAPI', () => {
       ];
 
       // Mock getBlocksFound
-      vi.spyOn(oceanApi, 'getBlocksFound').mockResolvedValue(mockBlocks as any);
+      vi.spyOn(oceanApi, 'getBlocksFound').mockResolvedValue(mockBlocks as unknown as BlockFoundData[]);
 
       // Mock getHashRateData
       vi.spyOn(oceanApi, 'getHashRateData').mockResolvedValue(mockHashRates);
@@ -195,7 +196,7 @@ describe('OceanAPI', () => {
       const mockShareWindow = { date: '2025-09-25T05:30:00Z', size: 1138740823429400 };
       const mockHashRates = [{ timestamp: '2025-08-29T19:30:00Z', worker: '', hashRate: 100000 }];
 
-      vi.spyOn(oceanApi, 'getBlocksFound').mockResolvedValue(mockBlocks as any);
+      vi.spyOn(oceanApi, 'getBlocksFound').mockResolvedValue(mockBlocks as unknown as BlockFoundData[]);
       vi.spyOn(oceanApi, 'getShareWindow').mockResolvedValue(mockShareWindow);
       vi.spyOn(oceanApi, 'getHashRateData').mockResolvedValue(mockHashRates);
 

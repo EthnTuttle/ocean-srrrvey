@@ -14,7 +14,7 @@ export class SurveyService {
     let secretKey = existingSecretKey;
 
     if (!secretKey) {
-      secretKey = CookieManager.getTelehashPirateKey();
+      secretKey = CookieManager.getTelehashPirateKey() ?? undefined;
     }
 
     this.nostrClient = new NostrClient(secretKey);

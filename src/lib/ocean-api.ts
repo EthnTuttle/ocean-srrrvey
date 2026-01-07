@@ -53,15 +53,16 @@ export class OceanAPI {
     const lines = csvText.trim().split('\n');
     return lines.map(line => {
       const parts = line.split(',');
-      // Format appears to be: timestamp, hashrate_in_TH/s, (empty)
+      // Format appears to be: timestamp, (empty), hashrate_in_GH/s
       const timestamp = parts[0];
-      const hashRateStr = parts[1];
-      const hashRate = parseFloat(hashRateStr) || 0;
+      const hashRateStr = parts[2]; // Hashrate is in the third column
+      const hashRateGHs = parseFloat(hashRateStr) || 0;
+      const hashRate = hashRateGHs / 1000; // Convert GH/s to TH/s
 
       return {
         timestamp: timestamp || new Date().toISOString(),
         worker: '', // Worker info not available in this CSV
-        hashRate: hashRate // This is already in TH/s from Ocean API
+        hashRate: hashRate // Convert to TH/s for consistency
       };
     }).filter(item => item.hashRate > 0);
   }
@@ -142,6 +143,50 @@ export class OceanAPI {
     };
   }
 
+  // Try to get real worker data from Ocean's interface
+  async getRealWorkerData(address: string): Promise<WorkerStats[]> {
+    try {
+      // This would be the ideal endpoint, but it may not be publicly accessible
+      const response = await fetch(`${this.baseUrl}/template/workers/rows?address=${address}&limit=21`);
+
+      if (!response.ok) {
+        console.warn('Ocean workers API not accessible, falling back to simulation');
+        return [];
+      }
+
+      const html = await response.text();
+
+      // Parse HTML to extract worker data (this is fragile but better than fake data)
+      // In practice, Ocean would provide a JSON API for this
+      const workerMatches = html.matchAll(/<tr[^>]*>[\s\S]*?<\/tr>/g);
+      const workers: WorkerStats[] = [];
+
+      for (const match of workerMatches) {
+        const row = match[0];
+        // Extract worker name, hashrate, etc. from HTML
+        const nameMatch = row.match(/class="worker-name"[^>]*>([^<]+)</);
+        const hashrateMatch = row.match(/class="hashrate"[^>]*>([^<]+)</);
+
+        if (nameMatch && hashrateMatch) {
+          workers.push({
+            workerName: nameMatch[1].trim(),
+            hashRate60s: parseFloat(hashrateMatch[1]) || 0,
+            hashRate3hr: parseFloat(hashrateMatch[1]) || 0,
+            hashRate24hr: parseFloat(hashrateMatch[1]) || 0,
+            lastSeen: new Date().toISOString(),
+            shares: 0,
+            earnings: 0
+          });
+        }
+      }
+
+      return workers.slice(0, 21); // Top 21 workers
+    } catch (error) {
+      console.warn('Failed to fetch real worker data:', error);
+      return [];
+    }
+  }
+
   async getAddressStats(address: string): Promise<AddressStats> {
     try {
       // Get hashrate data for the address
@@ -162,24 +207,30 @@ export class OceanAPI {
         ? hashRateData.reduce((sum, rate) => sum + rate.hashRate, 0) / hashRateData.length
         : 0;
 
-      // Since we don't have individual worker data from the API,
-      // we'll create a single "worker" entry representing the address
-      const workers: WorkerStats[] = hashRateData.length > 0 ? [{
-        workerName: 'Main',
-        hashRate60s: currentHashRate,
-        hashRate3hr: avgHashRate,
-        hashRate24hr: avgHashRate,
-        lastSeen: hashRateData[hashRateData.length - 1]?.timestamp || new Date().toISOString(),
-        shares: addressBlocks.reduce((sum, block) => sum + block.acceptedShares, 0),
-        earnings: 0 // Not available from API
-      }] : [];
+      // Try to get real worker data first, fall back to simulation
+      let workers: WorkerStats[] = await this.getRealWorkerData(address);
+
+      if (workers.length === 0) {
+        // Fallback: create a single worker entry representing the address
+        workers = hashRateData.length > 0 ? [{
+          workerName: `${address.slice(-8)}`, // Use address suffix as worker name
+          hashRate60s: currentHashRate,
+          hashRate3hr: avgHashRate,
+          hashRate24hr: avgHashRate,
+          lastSeen: hashRateData[hashRateData.length - 1]?.timestamp || new Date().toISOString(),
+          shares: addressBlocks.reduce((sum, block) => sum + block.acceptedShares, 0),
+          earnings: 0 // Not available from API
+        }] : [];
+      }
 
       return {
         address,
         totalHashRate: currentHashRate,
         totalShares: addressBlocks.reduce((sum, block) => sum + block.acceptedShares, 0),
         totalEarnings: 0, // Not available from API
-        activeWorkers: workers.length,
+        activeWorkers: workers.filter(w =>
+          new Date(w.lastSeen).getTime() > Date.now() - 60 * 60 * 1000
+        ).length,
         workers,
         lastUpdate: new Date().toISOString()
       };
@@ -197,7 +248,7 @@ export class OceanAPI {
     }
   }
 
-  async getPoolStatus(): Promise<any> {
+  async getPoolStatus(): Promise<string | null> {
     try {
       const response = await fetch(`${this.baseUrl}/template/poolstatus`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

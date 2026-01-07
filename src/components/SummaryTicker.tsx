@@ -5,15 +5,8 @@ interface SummaryTickerProps {
   workers: WorkerStats[];
 }
 
-interface TickerStat {
-  label: string;
-  value: string;
-  icon: string;
-  color: string;
-}
-
 export const SummaryTicker = ({ workers }: SummaryTickerProps) => {
-  const [currentStatIndex, setCurrentStatIndex] = useState(0);
+  const [currentWorkerIndex, setCurrentWorkerIndex] = useState(0);
 
   const formatHashRate = (hashRate: number): string => {
     if (hashRate === 0) return '0 H/s';
@@ -38,112 +31,76 @@ export const SummaryTicker = ({ workers }: SummaryTickerProps) => {
     return num.toString();
   };
 
-  // Calculate statistics
-  const totalHashRate = workers.reduce((sum, w) => sum + w.hashRate60s, 0);
-  const totalShares = workers.reduce((sum, w) => sum + w.shares, 0);
-  const totalEarnings = workers.reduce((sum, w) => sum + w.earnings, 0);
+  const formatTime = (timestamp: string): string => {
+    const now = Date.now();
+    const lastSeen = new Date(timestamp).getTime();
+    const diff = now - lastSeen;
 
-  const activeWorkers = workers.filter(w =>
-    new Date(w.lastSeen).getTime() > Date.now() - 60 * 60 * 1000
-  ).length;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-  const avgHashRate = workers.length > 0 ? totalHashRate / workers.length : 0;
-  const topWorkerHashRate = workers[0]?.hashRate60s || 0;
-  const efficiency = workers.length > 0 && topWorkerHashRate > 0
-    ? Math.min(100, (avgHashRate / topWorkerHashRate) * 100)
-    : 0;
+    if (hours > 0) return `${hours}h ${minutes}m ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'Just now';
+  };
 
-  const stats: TickerStat[] = [
-    {
-      label: 'Total Hashrate',
-      value: formatHashRate(totalHashRate),
-      icon: '⚡',
-      color: 'text-yellow-600 dark:text-yellow-400'
-    },
-    {
-      label: 'Active Workers',
-      value: `${activeWorkers}/${workers.length}`,
-      icon: '👥',
-      color: 'text-green-600 dark:text-green-400'
-    },
-    {
-      label: 'Total Shares',
-      value: formatNumber(totalShares),
-      icon: '💎',
-      color: 'text-blue-600 dark:text-blue-400'
-    },
-    {
-      label: 'Efficiency',
-      value: `${efficiency.toFixed(1)}%`,
-      icon: '📊',
-      color: 'text-purple-600 dark:text-purple-400'
-    },
-    {
-      label: 'Avg Hashrate',
-      value: formatHashRate(avgHashRate),
-      icon: '📈',
-      color: 'text-orange-600 dark:text-orange-400'
-    },
-    {
-      label: 'Total Earnings',
-      value: `${totalEarnings.toFixed(8)} BTC`,
-      icon: '💰',
-      color: 'text-green-600 dark:text-green-400'
-    }
-  ];
-
-  // Rotate through stats every 3 seconds
+  // Rotate through workers every 4 seconds
   useEffect(() => {
-    if (stats.length === 0) return;
+    if (workers.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentStatIndex((prev) => (prev + 1) % stats.length);
-    }, 3000);
+      setCurrentWorkerIndex((prev) => (prev + 1) % workers.length);
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, [stats.length]);
+  }, [workers.length]);
 
   if (workers.length === 0) {
     return (
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
         <div className="text-center text-gray-500 dark:text-gray-400">
-          No worker data available
+          No pirate crew available
         </div>
       </div>
     );
   }
 
+  const currentWorker = workers[currentWorkerIndex];
+
   return (
-    <div className="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 text-white rounded-lg p-4 shadow-lg">
+    <div className="bg-gradient-to-r from-gray-800 via-blue-800 to-gray-800 text-white rounded-lg p-4 shadow-lg">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="text-2xl">🏴‍☠️</span>
+          <span className="text-2xl">⚔️</span>
           <div>
-            <div className="text-sm text-gray-300">Live Stats</div>
-            <div className="text-xs text-gray-400">Auto-updating every 3s</div>
+            <div className="text-sm text-gray-300">Crew Member Ticker</div>
+            <div className="text-xs text-gray-400">Cycling every 4s</div>
           </div>
         </div>
 
-        {/* Main rotating stat */}
+        {/* Current worker display */}
         <div className="flex-1 text-center">
           <div className="transition-all duration-500 ease-in-out">
-            <div className={`text-3xl ${stats[currentStatIndex]?.color || 'text-white'}`}>
-              {stats[currentStatIndex]?.icon} {stats[currentStatIndex]?.value}
+            <div className="text-2xl font-bold text-yellow-400 mb-1">
+              {currentWorker?.workerName || 'Unknown Pirate'}
             </div>
-            <div className="text-sm text-gray-300 mt-1">
-              {stats[currentStatIndex]?.label}
+            <div className="text-lg text-green-400 mb-1">
+              {formatHashRate(currentWorker?.hashRate60s || 0)}
+            </div>
+            <div className="text-sm text-gray-300">
+              {formatNumber(currentWorker?.shares || 0)} shares • Last seen {formatTime(currentWorker?.lastSeen || new Date().toISOString())}
             </div>
           </div>
         </div>
 
-        {/* Quick stats preview */}
+        {/* Progress info */}
         <div className="hidden md:block">
           <div className="text-right space-y-1">
-            <div className="text-xs text-gray-400">Quick View:</div>
+            <div className="text-xs text-gray-400">Crew Progress:</div>
             <div className="text-sm">
-              <span className="text-yellow-400">{formatHashRate(totalHashRate)}</span>
-              <span className="text-gray-400 mx-2">•</span>
-              <span className="text-green-400">{activeWorkers} Active</span>
+              <span className="text-yellow-400">{currentWorkerIndex + 1}</span>
+              <span className="text-gray-400 mx-1">/</span>
+              <span className="text-green-400">{workers.length}</span>
             </div>
           </div>
         </div>
@@ -151,16 +108,21 @@ export const SummaryTicker = ({ workers }: SummaryTickerProps) => {
 
       {/* Progress indicators */}
       <div className="flex justify-center mt-3 space-x-1">
-        {stats.map((_, idx) => (
+        {workers.slice(0, Math.min(10, workers.length)).map((_, idx) => (
           <div
             key={idx}
-            className={`h-1 w-8 rounded-full transition-all duration-300 ${
-              idx === currentStatIndex
-                ? 'bg-white'
+            className={`h-1 w-6 rounded-full transition-all duration-300 ${
+              idx === currentWorkerIndex % 10
+                ? 'bg-yellow-400'
                 : 'bg-gray-600'
             }`}
           />
         ))}
+        {workers.length > 10 && (
+          <div className="text-xs text-gray-400 ml-2">
+            +{workers.length - 10} more
+          </div>
+        )}
       </div>
     </div>
   );

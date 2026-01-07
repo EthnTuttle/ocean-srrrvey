@@ -2,9 +2,17 @@ import { useState } from 'react';
 import { OceanAPI } from '../lib/ocean-api';
 import { SurveyService } from '../lib/survey-service';
 
+interface TestResult {
+  success: boolean;
+  data?: string | object;
+  sample?: unknown;
+  error?: string;
+  npub?: string;
+}
+
 const Debug = () => {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<Record<string, TestResult> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const oceanApi = new OceanAPI();
@@ -26,7 +34,7 @@ const Debug = () => {
         { name: 'HashRate Data', test: () => oceanApi.getHashRateData('bc1q6f3ged3f74sga3z2cgeyehv5f9lu9r6p5arqvf44yzsy4gtjxtlsmnhn8j') },
       ];
 
-      const testResults: any = {};
+      const testResults: Record<string, TestResult> = {};
 
       for (const test of tests) {
         try {
@@ -101,7 +109,7 @@ const Debug = () => {
 
         {results && (
           <div className="space-y-4">
-            {Object.entries(results).map(([name, result]: [string, any]) => (
+            {Object.entries(results).map(([name, result]) => (
               <div
                 key={name}
                 className={`p-4 rounded-lg border ${
@@ -120,9 +128,9 @@ const Debug = () => {
                 {result.success ? (
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {result.data}
+                      {typeof result.data === 'string' ? result.data : JSON.stringify(result.data)}
                     </p>
-                    {result.sample && (
+                    {result.sample !== undefined && (
                       <details className="mt-2">
                         <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
                           View Sample Data

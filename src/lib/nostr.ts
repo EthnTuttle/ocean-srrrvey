@@ -1,5 +1,6 @@
 import { generateSecretKey, getPublicKey, finalizeEvent, nip19, SimplePool, Event } from 'nostr-tools';
 import type { OceanSurveyData, NostrSurveyNote } from './types';
+import { generateSimulatedWorkers, generateSummaryStats } from './worker-simulator';
 
 export class NostrClient {
   private secretKey: Uint8Array;
@@ -91,9 +92,6 @@ export class NostrClient {
   }
 
   private formatSurveyContent(oceanData: OceanSurveyData): string {
-    // Import here to avoid circular dependency
-    const { generateSimulatedWorkers, generateSummaryStats } = require('../lib/worker-simulator');
-
     const currentHashRate = oceanData.hashRateData.length > 0
       ? oceanData.hashRateData[oceanData.hashRateData.length - 1].hashRate
       : 0;
